@@ -14,9 +14,6 @@
 
 	<modules>
 		<module>auth-service</module>
-		<module>catalog-service</module>
-		<module>order-service</module>
-		<module>delivery-service</module>
 	</modules>
 
 </project>
