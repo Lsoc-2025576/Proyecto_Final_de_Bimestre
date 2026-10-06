@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-route
+          uri: lb://usuario-service
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: comercios-route
+          uri: lb://comercio-service
+          predicates:
+            - Path=/api/v1/comercios/**
+        - id: pedidos-route
+          uri: lb://pedido-service
+          predicates:
+            - Path=/api/v1/pedidos/**
+
+jwt:
+  secret: clave-super-secreta-delivery-2026-microservicios-bitcore
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
