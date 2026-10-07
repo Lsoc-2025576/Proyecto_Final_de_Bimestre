@@ -15,7 +15,7 @@
     <modules>
         <module>eureka-server</module>
         <module>usuario-service</module>
-        <module>comercio-service</module>
+        <!-- <module>comercio-service</module> -->
     </modules>
 
     <build>
