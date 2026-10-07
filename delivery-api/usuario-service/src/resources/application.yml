@@ -1,0 +1,37 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: usuario-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/usuarios_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 10000
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    show-sql: false
+    # data.sql debe correr DESPUES de que Hibernate cree las tablas
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+jwt:
+  secret: clave-super-secreta-delivery-2026-microservicios-bitcore
+  expiration-ms: 86400000   # 24 horas
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
