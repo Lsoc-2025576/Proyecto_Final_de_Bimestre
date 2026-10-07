@@ -12,8 +12,21 @@
 	<name>delivery-api-parent</name>
 	<description>Proyecto Parent para Microservicios de Delivery</description>
 
+	<!--
+        Agregador: cada modulo se agrega aqui SOLO cuando ya existe su carpeta con pom.xml
+        y su clase principal. Orden de creacion previsto:
+          Fase 1: eureka-server
+          Fase 2: usuario-service
+          Fase 3: api-gateway
+          Fase 4: comercio-service
+          Fase 5: pedido-service
+    -->
 	<modules>
-		<module>auth-service</module>
+		<module>eureka-server</module>
+		<!-- <module>usuario-service</module> -->
+		<!-- <module>api-gateway</module> -->
+		<!-- <module>comercio-service</module> -->
+		<!-- <module>pedido-service</module> -->
 	</modules>
 
 </project>
