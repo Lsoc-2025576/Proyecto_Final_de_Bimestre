@@ -1,0 +1,496 @@
+{
+  "info": {
+    "name": "FastOrder - Delivery API",
+    "description": "Coleccion de pruebas. Ejecutar con el Collection Runner (en orden). Fase 2: usuario-service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/api/v1",
+      "description": "Fase 2: directo a usuario-service (8081). Desde la Fase 3 cambiar a http://localhost:8080/api/v1 (gateway)."
+    },
+    {
+      "key": "nuevoEmail",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "repartidorToken",
+      "value": ""
+    },
+    {
+      "key": "clienteToken",
+      "value": ""
+    },
+    {
+      "key": "clienteNuevoToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Fase 2 - Autenticacion (usuario-service)",
+      "item": [
+        {
+          "name": "1. Registrar CLIENTE nuevo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('nuevoEmail', 'cliente' + Date.now() + '@fastorder.com');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Rol asignado = CLIENTE', () => pm.expect(json.rol).to.eql('CLIENTE'));",
+                  "pm.test('Devuelve id', () => pm.expect(json.id).to.be.a('number'));",
+                  "pm.test('NO expone el password', () => pm.expect(json).to.not.have.property('password'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cliente Postman\",\n  \"direccion\": \"Zona 10, Ciudad\",\n  \"telefono\": \"55554321\",\n  \"email\": \"{{nuevoEmail}}\",\n  \"password\": \"Cliente123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "2. Registrar email duplicado -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Duplicado\",\n  \"email\": \"{{nuevoEmail}}\",\n  \"password\": \"Cliente123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "3. Registro invalido (email malo, sin password) -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('Detalla errores por campo', () => {",
+                  "  pm.expect(json.errors).to.have.property('email');",
+                  "  pm.expect(json.errors).to.have.property('password');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin datos\",\n  \"email\": \"esto-no-es-un-email\"\n}"
+            }
+          }
+        },
+        {
+          "name": "4. Intentar registrarse como ADMIN (debe ignorarse) -> CLIENTE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Rol forzado a CLIENTE (ignora \"rol\":\"ADMIN\")', () => pm.expect(json.rol).to.eql('CLIENTE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Hacker\",\n  \"email\": \"hacker{{$timestamp}}@fastorder.com\",\n  \"password\": \"Hacker123*\",\n  \"rol\": \"ADMIN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "5. Login ADMIN (seed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function decodificar(t) {",
+                  "  let b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (b.length % 4) { b += '='; }",
+                  "  return JSON.parse(atob(b));",
+                  "}",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve un token JWT (3 partes)', () => pm.expect(json.token).to.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/));",
+                  "pm.test('Rol en la respuesta = ADMIN', () => pm.expect(json.rol).to.eql('ADMIN'));",
+                  "pm.test('Claims del token correctos (sub, rol, userId)', () => {",
+                  "  const p = decodificar(json.token);",
+                  "  pm.expect(p.sub).to.eql('admin@fastorder.com');",
+                  "  pm.expect(p.rol).to.eql('ADMIN');",
+                  "  pm.expect(p.userId).to.be.a('number');",
+                  "});",
+                  "pm.collectionVariables.set('adminToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fastorder.com\",\n  \"password\": \"Admin123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "6. Login REPARTIDOR (seed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function decodificar(t) {",
+                  "  let b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (b.length % 4) { b += '='; }",
+                  "  return JSON.parse(atob(b));",
+                  "}",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve un token JWT (3 partes)', () => pm.expect(json.token).to.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/));",
+                  "pm.test('Rol en la respuesta = REPARTIDOR', () => pm.expect(json.rol).to.eql('REPARTIDOR'));",
+                  "pm.test('Claims del token correctos (sub, rol, userId)', () => {",
+                  "  const p = decodificar(json.token);",
+                  "  pm.expect(p.sub).to.eql('repartidor@fastorder.com');",
+                  "  pm.expect(p.rol).to.eql('REPARTIDOR');",
+                  "  pm.expect(p.userId).to.be.a('number');",
+                  "});",
+                  "pm.collectionVariables.set('repartidorToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"repartidor@fastorder.com\",\n  \"password\": \"Repartidor123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "7. Login CLIENTE (seed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function decodificar(t) {",
+                  "  let b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (b.length % 4) { b += '='; }",
+                  "  return JSON.parse(atob(b));",
+                  "}",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve un token JWT (3 partes)', () => pm.expect(json.token).to.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/));",
+                  "pm.test('Rol en la respuesta = CLIENTE', () => pm.expect(json.rol).to.eql('CLIENTE'));",
+                  "pm.test('Claims del token correctos (sub, rol, userId)', () => {",
+                  "  const p = decodificar(json.token);",
+                  "  pm.expect(p.sub).to.eql('cliente.demo@fastorder.com');",
+                  "  pm.expect(p.rol).to.eql('CLIENTE');",
+                  "  pm.expect(p.userId).to.be.a('number');",
+                  "});",
+                  "pm.collectionVariables.set('clienteToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente.demo@fastorder.com\",\n  \"password\": \"Cliente123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "8. Login con el cliente recien registrado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function decodificar(t) {",
+                  "  let b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (b.length % 4) { b += '='; }",
+                  "  return JSON.parse(atob(b));",
+                  "}",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve un token JWT (3 partes)', () => pm.expect(json.token).to.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/));",
+                  "pm.test('Rol en la respuesta = CLIENTE', () => pm.expect(json.rol).to.eql('CLIENTE'));",
+                  "pm.test('Claims del token correctos (sub, rol, userId)', () => {",
+                  "  const p = decodificar(json.token);",
+                  "  pm.expect(p.sub).to.eql(pm.collectionVariables.get('nuevoEmail'));",
+                  "  pm.expect(p.rol).to.eql('CLIENTE');",
+                  "  pm.expect(p.userId).to.be.a('number');",
+                  "});",
+                  "pm.collectionVariables.set('clienteNuevoToken', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{nuevoEmail}}\",\n  \"password\": \"Cliente123*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "9. Login con password incorrecta -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('No entrega token', () => pm.expect(pm.response.json()).to.not.have.property('token'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fastorder.com\",\n  \"password\": \"incorrecta\"\n}"
+            }
+          }
+        },
+        {
+          "name": "10. Login con email inexistente -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401 Unauthorized (mismo error: no revela si el email existe)', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"noexiste@fastorder.com\",\n  \"password\": \"Cualquiera1\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

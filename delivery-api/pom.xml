@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.bitcoresolutions</groupId>
-	<artifactId>delivery-api-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>com.bitcoresolutions</groupId>
+    <artifactId>delivery-api-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>delivery-api-parent</name>
-	<description>Proyecto Parent para Microservicios de Delivery</description>
+    <name>delivery-api-parent</name>
+    <description>Proyecto Parent para Microservicios de Delivery</description>
 
-	<!--
+    <!--
         Agregador: cada modulo se agrega aqui SOLO cuando ya existe su carpeta con pom.xml
         y su clase principal. Orden de creacion previsto:
           Fase 1: eureka-server
@@ -21,12 +21,12 @@
           Fase 4: comercio-service
           Fase 5: pedido-service
     -->
-	<modules>
-		<module>eureka-server</module>
-		<!-- <module>usuario-service</module> -->
-		<!-- <module>api-gateway</module> -->
-		<!-- <module>comercio-service</module> -->
-		<!-- <module>pedido-service</module> -->
-	</modules>
+    <modules>
+        <module>eureka-server</module>
+        <module>usuario-service</module>
+        <!-- <module>api-gateway</module> -->
+        <!-- <module>comercio-service</module> -->
+        <!-- <module>pedido-service</module> -->
+    </modules>
 
 </project>
