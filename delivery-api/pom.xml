@@ -12,21 +12,37 @@
     <name>delivery-api-parent</name>
     <description>Proyecto Parent para Microservicios de Delivery</description>
 
-    <!--
-        Agregador: cada modulo se agrega aqui SOLO cuando ya existe su carpeta con pom.xml
-        y su clase principal. Orden de creacion previsto:
-          Fase 1: eureka-server
-          Fase 2: usuario-service
-          Fase 3: api-gateway
-          Fase 4: comercio-service
-          Fase 5: pedido-service
-    -->
     <modules>
         <module>eureka-server</module>
         <module>usuario-service</module>
-        <!-- <module>api-gateway</module> -->
-        <!-- <module>comercio-service</module> -->
-        <!-- <module>pedido-service</module> -->
+        <module>comercio-service</module>
     </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.1.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.12.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
